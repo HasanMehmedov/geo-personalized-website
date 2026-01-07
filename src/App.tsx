@@ -48,7 +48,7 @@ function App() {
         };
       }
 
-      const webhookUrl = 'https://nass11.app.n8n.cloud/webhook-test/0ed3d82f-8c6a-4746-8423-226584100d86';
+      const webhookUrl = 'https://n8n.nasso.work/webhook-test/0ed3d82f-8c6a-4746-8423-226584100d86';
 
       try {
         const webhookResponse = await fetch(webhookUrl, {
