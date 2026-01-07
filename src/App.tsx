@@ -49,39 +49,48 @@ function App() {
       }
 
       const webhookUrl = 'https://nass11.app.n8n.cloud/webhook-test/0ed3d82f-8c6a-4746-8423-226584100d86';
-      const webhookResponse = await fetch(webhookUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          city: initialLocationData.city,
-          country: initialLocationData.country,
+
+      try {
+        const webhookResponse = await fetch(webhookUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            city: initialLocationData.city,
+            country: initialLocationData.country,
+            latitude: initialLocationData.latitude,
+            longitude: initialLocationData.longitude,
+          }),
+        });
+
+        if (!webhookResponse.ok) {
+          throw new Error(`Webhook returned status ${webhookResponse.status}`);
+        }
+
+        const jsonData = await webhookResponse.json();
+        console.log('Webhook response:', jsonData);
+
+        if (jsonData.imgUrl) {
+          setBackgroundImage(jsonData.imgUrl);
+        } else {
+          console.warn('No imgUrl in response, using placeholder');
+          setBackgroundImage('https://images.pexels.com/photos/1761279/pexels-photo-1761279.jpeg');
+        }
+
+        const finalLocationData: LocationData = {
+          city: jsonData.city || initialLocationData.city,
+          country: jsonData.country || initialLocationData.country,
           latitude: initialLocationData.latitude,
           longitude: initialLocationData.longitude,
-        }),
-      });
+        };
 
-      if (!webhookResponse.ok) {
-        throw new Error(`Webhook returned status ${webhookResponse.status}`);
+        setLocation(finalLocationData);
+      } catch (webhookError) {
+        console.warn('Webhook failed, using default values:', webhookError);
+        setBackgroundImage('https://images.pexels.com/photos/1761279/pexels-photo-1761279.jpeg');
+        setLocation(initialLocationData);
       }
-
-      const jsonData = await webhookResponse.json();
-
-      if (jsonData.imgUrl) {
-        setBackgroundImage(jsonData.imgUrl);
-      } else {
-        throw new Error('No image URL in response');
-      }
-
-      const finalLocationData: LocationData = {
-        city: jsonData.city || initialLocationData.city,
-        country: jsonData.country || initialLocationData.country,
-        latitude: initialLocationData.latitude,
-        longitude: initialLocationData.longitude,
-      };
-
-      setLocation(finalLocationData);
 
     } catch (err) {
       console.error('Error:', err);
